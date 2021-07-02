@@ -7,6 +7,7 @@ idf_component_register(SRCS
                     "../src/my_mqtt.c"
                     "../src/sntpController.c"
                     "../src/display.c"
+                    "../src/transitions.c"
                     INCLUDE_DIRS "."
 				"../src"
 				"../include")

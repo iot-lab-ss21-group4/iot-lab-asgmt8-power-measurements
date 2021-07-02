@@ -12,6 +12,7 @@
 #include "deep_sleep.h"
 #include "sdkconfig.h"
 #include "display.h"
+#include "transitions.h"
 
 static int counting(gpio_evt_msg message);
 static void count_changes(int64_t timestamp_ms, int count);
@@ -58,45 +59,20 @@ static void gpio_task(void *_)
 
 static int counting(gpio_evt_msg message)
 {
-    //TODO: intergrate your cornercase handler
-    //following is a sample code:
-    static int8_t transition_table[][4] = {
-        //event: pin1-fall pin1-rise pin2-fall pin2-rise
-        {-1, 1, -1, 2},  //state 0: neither high
-        {0, -1, -1, 3},  //state 1: pin1 high
-        {-1, 3, 0, -1},  //state 2: pin2 high
-        {2, -1, 1, -1}}; //state 3: both high
-    static int8_t action_table[][2] = {
-        //fall rise
-        {0, 1},  //pin1
-        {2, 3}}; //pin2
+    // under the assumption that GPIO_PIN_1 is the outer pin
+    int state_change = (message.pin == GPIO_PIN_1) ? (1 << 0) : (1 << 1);
 
-    static int state = 0;
-    static uint32_t history = 0;
+    int change = transition_handling(state_change);
 
-    int pin = (message.pin == GPIO_PIN_1) ? 0 : 1;
-    int action = action_table[pin][message.level];
-    state = transition_table[state][action];
-    if (state < 0)
-    {
-        printf("impossible action, debouncing has failed\n");
-        state = 0;
-        return -1;
+    // just for checking, remove for power measurement
+    print_sensor_and_fsm_state(gpio_get_level(GPIO_PIN_2), gpio_get_level(GPIO_PIN_1));
+
+    if(change == 0){
+    	return 0;
     }
-    history *= 10;
-    history += state;
-    history %= 10000;
-    printf("history: %d\n", history);
-    if (history == 1020)
-    {
-        count++;
-        count_changes(message.timestamp, count);
-    }
-    else if (history == 2010)
-    {
-        count--;
-        count_changes(message.timestamp, count);
-    }
+    // -1 or +1 here
+    count = count + change;
+    count_changes(message.timestamp, count);
     return 0;
 }
 
