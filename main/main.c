@@ -59,8 +59,11 @@ static void gpio_task(void *_)
 
 static int counting(gpio_evt_msg message)
 {
+
+	ESP_LOGI(TAG, "GPIO event triggered! Pin: %d , Level: %d", message.pin, message.level);
+
     // under the assumption that GPIO_PIN_1 is the outer pin
-    int state_change = (message.pin == GPIO_PIN_1) ? (1 << 0) : (1 << 1);
+    int state_change = (message.pin == GPIO_PIN_1) ? OUTER_STATE_CHANGE : INNER_STATE_CHANGE;
 
     int change = transition_handling(state_change);
 

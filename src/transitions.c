@@ -22,8 +22,6 @@
 #define STR(x) STR_HELPER(x)
 
 #define FLAG_COUNT 2 // number of barrier bits (flags)
-#define INNER_BARRIER_FLAG (1 << 1)
-#define OUTER_BARRIER_FLAG (1 << 0)
 #define ESP_INTR_FLAG_DEFAULT 0
 
 #define STATE_IDENTIFIER_LENGTH (2 * FLAG_COUNT)
@@ -123,7 +121,7 @@ int transition_handling(uint8_t state_change)
 void print_sensor_and_fsm_state(uint8_t level_inner, uint8_t level_outer)
 {
     ESP_LOGI(TAG, "Sensor state: " BYTE_TO_BINARY_PATTERN ", FSM state: " BYTE_TO_BINARY_PATTERN,
-             BYTE_TO_BINARY((level_inner * INNER_BARRIER_FLAG) |
-                            (level_outer * OUTER_BARRIER_FLAG)),
+             BYTE_TO_BINARY((level_inner * INNER_STATE_CHANGE) |
+                            (level_outer * OUTER_STATE_CHANGE)),
              BYTE_TO_BINARY(FSM_STATE));
 }
